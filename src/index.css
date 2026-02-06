@@ -1,18 +1,8 @@
- (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
-diff --git a/src/index.css b/src/index.css
-new file mode 100644
-index 0000000000000000000000000000000000000000..0bd1ea8da1e0625b4d7ae94dbda3797e1cc339b7
---- /dev/null
-+++ b/src/index.css
-@@ -0,0 +1,8 @@
-+@tailwind base;
-+@tailwind components;
-+@tailwind utilities;
-+
-+body {
-+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
-+    sans-serif;
-+}
- 
-EOF
-)
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    sans-serif;
+}
