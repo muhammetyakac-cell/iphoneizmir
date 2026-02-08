@@ -43,6 +43,21 @@ const App = () => {
   const sliderRef = useRef(null);
   const [openFaq, setOpenFaq] = useState(null);
   const [activeTestimonial, setActiveTestimonial] = useState(0);
+  const [toolAnswers, setToolAnswers] = useState({
+    screenCrack: '',
+    touchIssue: '',
+    batteryDrain: '',
+    faceIdIssue: '',
+    waterDamage: '',
+  });
+  const [toolBudget, setToolBudget] = useState('Bütçe seçiniz');
+  const [toolNeedPickup, setToolNeedPickup] = useState('Evet');
+  const [tradeModel, setTradeModel] = useState('');
+  const [tradeCondition, setTradeCondition] = useState('');
+  const [tradeEstimate, setTradeEstimate] = useState(null);
+  const [warrantyStatus, setWarrantyStatus] = useState('Bilmiyorum');
+  const [etaModel, setEtaModel] = useState('');
+  const [etaService, setEtaService] = useState('');
 
   const getEnv = (key, fallback) => {
     try {
@@ -339,6 +354,58 @@ const App = () => {
     { label: 'Ortalama Süre', value: '2-4 Saat' },
     { label: 'Memnuniyet', value: '%98' },
   ];
+
+  const tradeInBase = {
+    'iPhone 11': 9500,
+    'iPhone 12': 12500,
+    'iPhone 13': 15500,
+    'iPhone 14': 18500,
+    'iPhone 15': 23500,
+    'iPhone 16': 28500,
+  };
+
+  const tradeInModifiers = {
+    'Mükemmel': 1,
+    'İyi': 0.9,
+    'Orta': 0.78,
+    'Hasarlı': 0.6,
+  };
+
+  const budgetPriority = [
+    'Hız',
+    'Uygun Fiyat',
+    'Orijinal Parça',
+    'Kapsamlı Kontrol',
+  ];
+
+  const handleTradeEstimate = () => {
+    if (!tradeModel || !tradeCondition) {
+      setTradeEstimate(null);
+      return;
+    }
+    const base = tradeInBase[tradeModel] || 0;
+    const multiplier = tradeInModifiers[tradeCondition] || 0;
+    setTradeEstimate(Math.round(base * multiplier));
+  };
+
+  const handleToolAnswer = (key, value) => {
+    setToolAnswers((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const toolScore = Object.values(toolAnswers).filter(Boolean).length;
+  const toolPriority =
+    toolScore >= 4
+      ? 'Cihazınız acil müdahale gerektiriyor.'
+      : toolScore >= 2
+        ? 'Kısa sürede servis önerilir.'
+        : 'Ön kontrol ve fiyat önerisi sunabiliriz.';
+
+  const etaResult = () => {
+    if (!etaModel || !etaService) return null;
+    if (etaService === 'Ekran Değişimi') return '40-60 dk';
+    if (etaService === 'Batarya Değişimi') return '25-40 dk';
+    return '60-120 dk';
+  };
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -936,6 +1003,242 @@ const App = () => {
                     En çok aranan konulara göre hazırlanan rehberler.
                   </p>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-20">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <div className="text-center space-y-4 mb-12">
+            <span className="text-xs uppercase tracking-[0.4em] text-fuchsia-200 font-bold">
+              Kullanışlı Araçlar
+            </span>
+            <h2 className="text-3xl md:text-4xl font-black text-white">
+              Kullanıcıların faydalanabileceği araçlar
+            </h2>
+            <p className="text-slate-300">
+              Hızlı teşhis, süre tahmini ve takas değeri gibi araçlarla kararınızı
+              netleştirin.
+            </p>
+          </div>
+
+          <div className="grid lg:grid-cols-3 gap-8">
+            <div className="rounded-[32px] border border-white/10 bg-white/5 p-6 space-y-4">
+              <h3 className="text-xl font-black text-white">Hızlı Arıza Analizi</h3>
+              <p className="text-sm text-slate-300">
+                Cihazınızın durumunu işaretleyin, önerilen servis önceliğini görün.
+              </p>
+              <div className="space-y-3">
+                {[
+                  { key: 'screenCrack', label: 'Ekran kırık/çatlak' },
+                  { key: 'touchIssue', label: 'Dokunmatik tepki vermiyor' },
+                  { key: 'batteryDrain', label: 'Pil hızlı tükeniyor' },
+                  { key: 'faceIdIssue', label: 'Face ID çalışmıyor' },
+                  { key: 'waterDamage', label: 'Sıvı teması oldu' },
+                ].map((item) => (
+                  <div
+                    key={item.key}
+                    className="flex items-center justify-between rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3"
+                  >
+                    <span className="text-sm text-slate-200">{item.label}</span>
+                    <div className="flex gap-2">
+                      {['Evet', 'Hayır'].map((option) => (
+                        <button
+                          key={option}
+                          type="button"
+                          onClick={() => handleToolAnswer(item.key, option)}
+                          className={`px-3 py-1 rounded-full text-xs font-bold ${
+                            toolAnswers[item.key] === option
+                              ? 'bg-fuchsia-500 text-white'
+                              : 'bg-white/10 text-slate-300'
+                          }`}
+                        >
+                          {option}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-4">
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
+                  Öneri
+                </p>
+                <p className="text-white font-bold mt-2">{toolPriority}</p>
+              </div>
+            </div>
+
+            <div className="rounded-[32px] border border-white/10 bg-white/5 p-6 space-y-4">
+              <h3 className="text-xl font-black text-white">Onarım Süresi Tahmini</h3>
+              <p className="text-sm text-slate-300">
+                Model ve işlem seçerek tahmini servis süresini öğrenin.
+              </p>
+              <select
+                className="w-full p-4 bg-slate-950/60 border border-white/10 rounded-2xl text-white font-bold"
+                value={etaModel}
+                onChange={(event) => setEtaModel(event.target.value)}
+              >
+                <option value="">Model seçiniz</option>
+                {Object.keys(prices).map((model) => (
+                  <option key={model}>{model}</option>
+                ))}
+              </select>
+              <select
+                className="w-full p-4 bg-slate-950/60 border border-white/10 rounded-2xl text-white font-bold"
+                value={etaService}
+                onChange={(event) => setEtaService(event.target.value)}
+              >
+                <option value="">İşlem seçiniz</option>
+                <option value="Ekran Değişimi">Ekran Değişimi</option>
+                <option value="Batarya Değişimi">Batarya Değişimi</option>
+                <option value="Diğer">Diğer</option>
+              </select>
+              <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-4">
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
+                  Tahmini Süre
+                </p>
+                <p className="text-white font-bold mt-2">
+                  {etaResult() || 'Seçim yapınız'}
+                </p>
+              </div>
+              <button
+                onClick={() => scrollToSection('appointment')}
+                className="w-full bg-fuchsia-500 text-white py-3 rounded-2xl font-bold"
+              >
+                Uygun Saat İçin Randevu Al
+              </button>
+            </div>
+
+            <div className="rounded-[32px] border border-white/10 bg-white/5 p-6 space-y-4">
+              <h3 className="text-xl font-black text-white">Takas Değeri Hesapla</h3>
+              <p className="text-sm text-slate-300">
+                Cihaz durumunuza göre tahmini takas değerini görün.
+              </p>
+              <select
+                className="w-full p-4 bg-slate-950/60 border border-white/10 rounded-2xl text-white font-bold"
+                value={tradeModel}
+                onChange={(event) => setTradeModel(event.target.value)}
+              >
+                <option value="">Model seçiniz</option>
+                {Object.keys(tradeInBase).map((model) => (
+                  <option key={model}>{model}</option>
+                ))}
+              </select>
+              <select
+                className="w-full p-4 bg-slate-950/60 border border-white/10 rounded-2xl text-white font-bold"
+                value={tradeCondition}
+                onChange={(event) => setTradeCondition(event.target.value)}
+              >
+                <option value="">Durum seçiniz</option>
+                {Object.keys(tradeInModifiers).map((condition) => (
+                  <option key={condition}>{condition}</option>
+                ))}
+              </select>
+              <button
+                type="button"
+                onClick={handleTradeEstimate}
+                className="w-full bg-white/10 text-white py-3 rounded-2xl font-bold"
+              >
+                Değer Hesapla
+              </button>
+              <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-4">
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
+                  Tahmini Değer
+                </p>
+                <p className="text-white font-bold mt-2">
+                  {tradeEstimate ? `${tradeEstimate.toLocaleString('tr-TR')} ₺` : '---'}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid lg:grid-cols-3 gap-8 mt-10">
+            <div className="rounded-[28px] border border-white/10 bg-white/5 p-6 space-y-3">
+              <h4 className="text-lg font-black text-white">Bütçe & Öncelik</h4>
+              <p className="text-sm text-slate-300">
+                Önceliğinizi seçin, size özel öneri hazırlayalım.
+              </p>
+              <select
+                className="w-full p-4 bg-slate-950/60 border border-white/10 rounded-2xl text-white font-bold"
+                value={toolBudget}
+                onChange={(event) => setToolBudget(event.target.value)}
+              >
+                <option>Bütçe seçiniz</option>
+                {budgetPriority.map((item) => (
+                  <option key={item}>{item}</option>
+                ))}
+              </select>
+              <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-4">
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
+                  Önerilen Akış
+                </p>
+                <p className="text-white font-bold mt-2">
+                  {toolBudget === 'Hız'
+                    ? 'Ekspres kurye ile aynı gün servis.'
+                    : toolBudget === 'Uygun Fiyat'
+                      ? 'Fiyat avantajlı parça seçenekleri.'
+                      : toolBudget === 'Orijinal Parça'
+                        ? 'Orijinal kalite parça önceliği.'
+                        : toolBudget === 'Kapsamlı Kontrol'
+                          ? 'Detaylı test ve rapor.'
+                          : 'Seçim yapınız.'}
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-[28px] border border-white/10 bg-white/5 p-6 space-y-3">
+              <h4 className="text-lg font-black text-white">Garanti Kontrol</h4>
+              <p className="text-sm text-slate-300">
+                Cihazınız garanti kapsamında mı? Hızlı yönlendirme alın.
+              </p>
+              <select
+                className="w-full p-4 bg-slate-950/60 border border-white/10 rounded-2xl text-white font-bold"
+                value={warrantyStatus}
+                onChange={(event) => setWarrantyStatus(event.target.value)}
+              >
+                <option>Garanti durumunu seçiniz</option>
+                <option value="Evet">Evet</option>
+                <option value="Hayır">Hayır</option>
+                <option value="Bilmiyorum">Bilmiyorum</option>
+              </select>
+              <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-4">
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
+                  Bilgilendirme
+                </p>
+                <p className="text-white font-bold mt-2">
+                  {warrantyStatus === 'Evet'
+                    ? 'Garanti kapsamı için ön inceleme yapalım.'
+                    : warrantyStatus === 'Hayır'
+                      ? 'Garanti dışı onarım için hızlı teklif sunabiliriz.'
+                      : 'Garanti durumunu birlikte kontrol edebiliriz.'}
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-[28px] border border-white/10 bg-white/5 p-6 space-y-3">
+              <h4 className="text-lg font-black text-white">Kurye İhtiyacı</h4>
+              <p className="text-sm text-slate-300">
+                Kurye ile alım/teslimat ihtiyacınızı belirtin.
+              </p>
+              <select
+                className="w-full p-4 bg-slate-950/60 border border-white/10 rounded-2xl text-white font-bold"
+                value={toolNeedPickup}
+                onChange={(event) => setToolNeedPickup(event.target.value)}
+              >
+                <option value="Evet">Evet, kurye istiyorum</option>
+                <option value="Hayır">Hayır, kendim teslim edeceğim</option>
+              </select>
+              <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-4">
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
+                  Öneri
+                </p>
+                <p className="text-white font-bold mt-2">
+                  {toolNeedPickup === 'Evet'
+                    ? 'Randevu oluştur, kurye saatini planlayalım.'
+                    : 'Yoğunluğa göre servis randevusu ayarlayalım.'}
+                </p>
               </div>
             </div>
           </div>
